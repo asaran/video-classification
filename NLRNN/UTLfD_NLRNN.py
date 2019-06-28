@@ -23,7 +23,7 @@ feature_path = 'features.pkl'
 
 # EncoderCNN architecture
 # CNN_fc_hidden1, CNN_fc_hidden2 = 1024, 768
-CNN_embed_dim = 2048      # latent dim extracted by 2D CNN
+CNN_embed_dim = 1024      # latent dim extracted by 2D CNN
 # img_x, img_y = 256, 342  # resize video 2d frame size
 dropout_p = 0.0          # dropout probability
 
@@ -35,12 +35,12 @@ RNN_FC_dim = 256
 # training parameters
 k = 6               # number of target category
 epochs = 120        # training epochs
-batch_size = 1#32  
+batch_size = 1  
 learning_rate = 1e-5#1e-4
 log_interval = 10   # interval for displaying training info
 
 # Select which frame to begin & end in videos
-begin_frame, end_frame, skip_frame = 1, 50, 1
+begin_frame, end_frame, skip_frame = 0, 51, 1
 
 
 def train(log_interval, model, device, train_loader, optimizer, epoch):
@@ -63,8 +63,10 @@ def train(log_interval, model, device, train_loader, optimizer, epoch):
 
         optimizer.zero_grad()
         # output = rnn_decoder(cnn_encoder(X))   # output has dim = (batch, number of classes)
-        h0 = torch.zeros(batch_size, 1024).to(device)
-        c0 = torch.zeros(batch_size, 1024).to(device)
+        h0 = torch.zeros(batch_size, CNN_embed_dim).to(device)
+        c0 = torch.zeros(batch_size, CNN_embed_dim).to(device)
+        print(X.size())
+        print(h0.size())
         output = rnn_decoder(X, h0, c0)
         output = output.view(-1,6)
         y = y.view(-1)

@@ -1,2 +1,4 @@
 NLRNN/*.pkl
 NLRNN/NLRNN_ckpt/*
+*.pyc
+*.npy

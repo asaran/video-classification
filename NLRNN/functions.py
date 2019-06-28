@@ -117,6 +117,8 @@ class Dataset_NLRNN(data.Dataset):
         self.labels = labels
         self.folders = folders  # ID corresponding to an entire video
         self.frames = frames # selected frames (a set of 50)
+        print('selected frames: ',len(self.frames))
+        print('#videos: ',len(self.folders))
 
     def __len__(self):
         "Denotes the total number of samples"
@@ -435,7 +437,9 @@ class DecoderRNN(nn.Module):
         self.fc4 = nn.Linear(self.h_FC_dim, self.num_classes)
 
     def forward(self, x_gaze, h0, c0):
-        out = torch.zeros(1,48,6).cuda()
+        batch_size = x_gaze.size()[0]
+        no_frames = x_gaze.size()[1]
+        out = torch.zeros(batch_size,no_frames,self.num_classes).cuda()
 
         # print(x_gaze.size()) #32,50,2048 #torch.Size([1, 48, 4096])
         # add FC layers before the LSTM        
@@ -450,7 +454,7 @@ class DecoderRNN(nn.Module):
         # RNN_out, (h_n, h_c) = self.LSTM(x, None)  
         """ h_n shape (n_layers, batch, hidden_size), h_c shape (n_layers, batch, hidden_size) """ 
         """ None represents zero initial hidden state. RNN_out has shape=(batch, time_step, output_size) """
-
+        print(x.size())
         h_n, h_c = self.lstm(x, (h0,c0))
 
         x = self.fc3(h_n)  
@@ -459,7 +463,7 @@ class DecoderRNN(nn.Module):
         x = self.fc4(x)
         out[:,0,:] = x
 
-        for i in range(1,x_gaze.size()[1]): #(1,48)
+        for i in range(1,no_frames): #(1,48)
             x = self.fc1(x_gaze[:,i,:])   # features for first frame
             x = F.relu(x)
             x = self.fc2(x)
